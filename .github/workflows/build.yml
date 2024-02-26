@@ -1,4 +1,4 @@
-name: build (android-aarch64)
+name: build (aarch64-linux-android)
 
 on:
   push:
