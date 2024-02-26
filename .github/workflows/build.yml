@@ -1,0 +1,38 @@
+name: build (android-aarch64)
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: davidB/rust-cargo-make@v1.9.0
+
+    # aarch64-linux-android
+    - run: rustup target add aarch64-linux-android
+
+    - run: |
+        export PATH=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin:$PATH && \
+        cargo make build --profile=production
+      env:
+        CARGO_BUILD_TARGET: aarch64-linux-android
+        CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: aarch64-linux-android28-clang
+        AR_aarch64_linux_android: llvm-ar
+        CC_aarch64_linux_android: aarch64-linux-android28-clang
+        CXX_aarch64_linux_android: aarch64-linux-android28-clang
+
+    - run: |
+        tar --zstd -cvf proot-rs_release_aarch64-linux-android.tar.zst \
+        target/aarch64-linux-android/release/proot-rs
+    - uses: actions/upload-artifact@v4
+      with:
+        name: proot-rs_release_aarch64-linux-android
+        path: proot-rs_release_aarch64-linux-android.tar.zst
